@@ -32,7 +32,7 @@
   <div class="container" id="slides"></div>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyl7U_VQkbeJGDZiKcZs3339d1BXKxF9ObjX7tFBuKd9_UtiOE6cvQE_Ph-8zr3hlxn/exec?feed=news";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwV9qf-CdbQOu13E6EuKOlfk4OOuxa08PCaPvI8WJ0DqLBYDNWDa_7MIkVDt19pdFcL0g/exec?feed=news";
 
     async function loadNews() {
       try {
