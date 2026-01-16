@@ -1,1 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radio Bayelsa 97.1 - Live</title>
+    
+    <link href="https://vjs.zencdn.net/8.3.0/video-js.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        body, html { margin: 0; padding: 0; height: 100%; background: #000; overflow: hidden; }
+        
+        .jewel-wrapper {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            border: 5px solid #d4af37; /* Gold Frame */
+            box-sizing: border-box;
+        }
 
+        .broadcasting-header {
+            background: linear-gradient(90deg, #004d40 0%, #002d26 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 3px solid #d4af37;
+        }
+
+        .broadcasting-header h1 {
+            margin: 0;
+            font-family: 'Cinzel', serif;
+            font-size: 24px;
+            letter-spacing: 2px;
+            color: #fff;
+        }
+
+        .slogan {
+            font-family: 'Montserrat', sans-serif;
+            color: #d4af37;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+        }
+
+        /* Video.js Professional Styling */
+        .video-js {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .vjs-big-play-button {
+            background-color: rgba(212, 175, 55, 0.8) !important;
+            border: none !important;
+            border-radius: 50% !important;
+            width: 100px !important;
+            height: 100px !important;
+            line-height: 100px !important;
+            margin-top: -50px !important;
+            margin-left: -50px !important;
+        }
+
+        .live-tag {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #ff0000;
+            color: white;
+            padding: 5px 15px;
+            font-family: sans-serif;
+            font-weight: bold;
+            border-radius: 4px;
+            z-index: 10;
+            font-size: 12px;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse { 0% {opacity: 1;} 50% {opacity: 0.5;} 100% {opacity: 1;} }
+    </style>
+</head>
+<body>
+
+<div class="jewel-wrapper">
+    <div class="broadcasting-header">
+        <h1>RADIO BAYELSA GLORY FM 97.1</h1>
+        <div class="slogan">The Jewel of the Niger Delta</div>
+    </div>
+
+    <div style="flex-grow: 1; position: relative;">
+        <div class="live-tag">LIVE ON AIR</div>
+        
+        <video id="jewel-player" class="video-js vjs-big-play-centered" controls preload="auto" data-setup='{}'>
+            <source src="https://YOUR_FREE_STREAM_LINK_HERE.m3u8" type="application/x-mpegURL">
+            <p class="vjs-no-js">To view this stream, please enable JavaScript.</p>
+        </video>
+    </div>
+</div>
+
+<script src="https://vjs.zencdn.net/8.3.0/video.min.js"></script>
+</body>
+</html>
