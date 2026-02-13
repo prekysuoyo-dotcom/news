@@ -1,38 +1,263 @@
-// Function to handle Likes via GitHub
-  async function handleLike() {
-    if(!currentStory) return;
-    const btn = document.getElementById('likeBtn');
-    btn.disabled = true;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Radio Bayelsa - Glory FM 97.1</title>
+  
+  <meta property="og:title" content="Radio Bayelsa - Glory FM 97.1">
+  <meta property="og:description" content="Latest news updates from the Glory of all Lands.">
+  <meta property="og:image" content="https://www.radiobayelsa.info/logo.png">
+  <meta property="og:type" content="website">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <style>
+    :root { --red: #bb1919; --dark: #1a1a1a; --wa: #25D366; --gray: #f4f4f4; }
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--gray); color: #333; line-height: 1.5; }
     
-    const resp = await fetch(SCRIPT_URL + "?action=like&row=" + currentStory.row);
-    const newCount = await resp.text();
+    .header { background: #fff; border-bottom: 4px solid var(--red); position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .top-bar { max-width: 1200px; margin: auto; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; }
+    .top-bar h2 { font-size: 1.2rem; color: var(--red); margin: 0; cursor: pointer; text-transform: uppercase; font-weight: 900; }
+    .cat-nav { background: var(--dark); display: flex; overflow-x: auto; scrollbar-width: none; }
+    .cat-nav button { background: none; border: none; color: #aaa; padding: 12px 18px; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 13px; white-space: nowrap; }
+    .cat-nav button.active { color: #fff; background: var(--red); }
+
+    .container { max-width: 1200px; margin: 15px auto; display: flex; flex-direction: column; gap: 20px; padding: 0 15px; }
+    @media(min-width: 992px) { .container { flex-direction: row; } }
+    .main-feed { flex: 3; }
+    .sidebar { flex: 1; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
+    .card { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.08); cursor: pointer; transition: 0.3s; }
+    .card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+    .card img { width: 100%; height: 180px; object-fit: cover; }
+    .card-info { padding: 12px; }
+    .card-info h3 { margin: 8px 0 5px 0; font-size: 15px; line-height: 1.3; font-weight: bold; height: 40px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;}
+    .stats { font-size: 11px; color: #888; display: flex; gap: 10px; margin-top: 5px; }
+
+    .side-box { background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-top: 3px solid var(--red); }
+    .trend-item { display: flex; gap: 10px; margin-bottom: 12px; cursor: pointer; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+    .trend-item img { width: 60px; height: 60px; object-fit: cover; border-radius: 4px; }
+    .trend-item h4 { margin: 0; font-size: 13px; line-height: 1.2; }
+
+    #reader { display: none; position: fixed; inset: 0; background: #fff; z-index: 2000; overflow-y: auto; }
+    .reader-box { max-width: 800px; margin: auto; padding: 20px; }
+    .story-img { width: 100%; border-radius: 8px; margin: 15px 0; max-height: 450px; object-fit: cover; }
+    .story-body { font-size: 19px; line-height: 1.8; white-space: pre-line; color: #222; }
+
+    .comment-sec { margin-top: 30px; border-top: 2px solid #eee; padding-top: 20px; }
+    .comment-input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; }
+    .wa-btn { background: var(--wa); color: white; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; border-radius: 4px; font-weight: bold; }
+    #loader { text-align: center; padding: 100px; }
+    .btn-action { padding: 10px 15px; cursor: pointer; border: none; border-radius: 4px; font-weight: bold; }
+  </style>
+</head>
+<body onload="init()">
+
+<div id="loader"><i class="fa fa-spinner fa-spin fa-3x" style="color:var(--red)"></i><br><p>Syncing Glory FM Data...</p></div>
+
+<div id="hub" style="display:none;">
+  <div class="header">
+    <div class="top-bar"><h2 onclick="location.href=window.location.origin+window.location.pathname">GLORY FM 97.1</h2></div>
+    <div class="cat-nav">
+      <button class="active" onclick="setCat('All', this)">All News</button>
+      <button onclick="setCat('Bayelsa', this)">Bayelsa</button>
+      <button onclick="setCat('National', this)">National</button>
+      <button onclick="setCat('Sports', this)">Sports</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="main-feed">
+      <div id="newsGrid" class="grid"></div>
+    </div>
     
-    document.getElementById('countLikes').innerText = newCount;
-    currentStory.likes = newCount; // Update local data
-    btn.style.color = "var(--red)";
+    <div class="sidebar">
+      <div class="side-box">
+        <h3><i class="fa fa-line-chart" style="color:var(--red)"></i> TRENDING</h3>
+        <div id="trendingList"></div>
+      </div>
+      <div class="side-box" style="background:var(--dark); color:white;">
+        <h4>NEWSLETTER</h4>
+        <p style="font-size: 12px;">Get daily updates in your inbox.</p>
+        <input type="email" placeholder="Email Address" class="comment-input">
+        <button style="width:100%; background:var(--red); color:white; border:none; padding:10px; font-weight:bold; cursor:pointer;">SUBSCRIBE</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="reader">
+  <div class="reader-box">
+    <button onclick="closeReader()" class="btn-action"><i class="fa fa-arrow-left"></i> BACK TO FEED</button>
+    <div id="readerContent"></div>
+    
+    <div style="margin:20px 0; display:flex; gap:10px; align-items:center;">
+        <button onclick="handleLike()" id="likeBtn" class="btn-action"><i class="fa fa-thumbs-up"></i> Like (<span id="countLikes">0</span>)</button>
+        <a id="waShare" href="#" target="_blank" class="wa-btn"><i class="fab fa-whatsapp"></i> SHARE STORY</a>
+    </div>
+
+    <div class="comment-sec">
+      <h3><i class="fa fa-comments"></i> COMMENTS</h3>
+      <div id="commentsList" style="margin-bottom:20px; max-height:300px; overflow-y:auto; background:#f9f9f9; padding:10px; border-radius:8px;"></div>
+      <input type="text" id="cName" placeholder="Your Name" class="comment-input">
+      <textarea id="cMsg" placeholder="Write your comment..." class="comment-input" rows="3"></textarea>
+      <button id="postBtn" onclick="postComment()" style="padding:12px 25px; background:var(--dark); color:white; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">POST COMMENT</button>
+    </div>
+
+    <div style="margin-top:50px;">
+      <h3><i class="fa fa-link" style="color:var(--red)"></i> RELATED STORIES</h3>
+      <div id="relatedGrid" class="grid"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwUSPUDklGraGgf01_Jdg0faPv_87-_HsshVOT9KtNfpXYRbGnrWiGolSaMIb87uf1l/exec";
+  let ALL = [], filtered = [], currentStory = null;
+
+  async function init() {
+    try {
+      const resp = await fetch(SCRIPT_URL + "?format=json");
+      ALL = await resp.json();
+      filtered = [...ALL];
+      document.getElementById('loader').style.display = 'none';
+      document.getElementById('hub').style.display = 'block';
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const storySlug = urlParams.get('story');
+      if(storySlug) openStory(storySlug);
+      else { render(); renderTrending(); }
+    } catch(e) {
+      document.getElementById('loader').innerHTML = "Connection Error. Please refresh.";
+    }
   }
 
-  // Function to handle Comments via GitHub
-  async function postComment() {
+  function render() {
+    const g = document.getElementById('newsGrid');
+    g.innerHTML = filtered.map(item => cardHtml(item)).join('');
+  }
+
+  function cardHtml(item) {
+    return `
+      <div class="card" onclick="openStory('${item.slug}')">
+        <img src="${item.image || 'https://www.radiobayelsa.info/logo.png'}">
+        <div class="card-info">
+          <small style="color:var(--red); font-weight:bold; text-transform:uppercase;">${item.category}</small>
+          <h3>${item.caption}</h3>
+          <div class="stats">
+            <span><i class="fa fa-eye"></i> ${item.views || 0}</span>
+            <span><i class="fa fa-thumbs-up"></i> ${item.likes || 0}</span>
+            <span><i class="fa fa-calendar"></i> ${item.date}</span>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function renderTrending() {
+    const t = document.getElementById('trendingList');
+    const sorted = [...ALL].sort((a,b) => b.views - a.views).slice(0, 5);
+    t.innerHTML = sorted.map(s => `
+      <div class="trend-item" onclick="openStory('${s.slug}')">
+        <img src="${s.image}">
+        <div>
+          <h4>${s.caption}</h4>
+          <small style="color:var(--red)">${s.views} views</small>
+        </div>
+      </div>`).join('');
+  }
+
+  async function openStory(slug) {
+    const s = ALL.find(x => x.slug === slug);
+    if(!s) { render(); return; }
+    currentStory = s;
+    
+    document.getElementById('hub').style.display = 'none';
+    document.getElementById('reader').style.display = 'block';
+    window.scrollTo(0,0);
+
+    const shareUrl = window.location.origin + window.location.pathname + "?story=" + s.slug;
+    document.getElementById('waShare').href = `https://api.whatsapp.com/send?text=*${encodeURIComponent(s.caption)}*%0A%0ARead more: ${shareUrl}`;
+    document.getElementById('countLikes').innerText = s.likes;
+
+    document.getElementById('readerContent').innerHTML = `
+      <h1 style="font-size:32px; line-height:1.2; margin-bottom:10px;">${s.caption}</h1>
+      <p style="color:#666; margin-bottom:20px;">${s.date} | Reporter: ${s.reporter}</p>
+      <img src="${s.image}" class="story-img">
+      <div class="story-body">${s.body}</div>
+    `;
+
+    // RELATED STORIES (6)
+    const related = ALL.filter(x => x.category === s.category && x.slug !== s.slug).slice(0, 6);
+    document.getElementById('relatedGrid').innerHTML = related.length > 0 ? related.map(item => cardHtml(item)).join('') : '<p>No related stories found.</p>';
+
+    // FETCH COMMENTS via JSONP to avoid CORS
+    loadComments(s.slug);
+
+    // ADD VIEW
+    fetch(SCRIPT_URL + "?action=view&row=" + s.row);
+    window.history.pushState({}, '', "?story=" + s.slug);
+  }
+
+  function loadComments(slug) {
+    const script = document.createElement('script');
+    script.src = `${SCRIPT_URL}?callback=displayComments&action=getComments&slug=${slug}`;
+    document.body.appendChild(script);
+  }
+
+  window.displayComments = function(data) {
+    const list = document.getElementById('commentsList');
+    if(!data || data.length === 0) {
+      list.innerHTML = "<p style='color:#888'>No comments yet. Be the first!</p>";
+    } else {
+      list.innerHTML = data.map(c => `<div style="margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:5px;"><strong>${c.name}</strong><br><span style="font-size:14px;">${c.text}</span></div>`).join('');
+    }
+  };
+
+  async function handleLike() {
+    const btn = document.getElementById('likeBtn');
+    btn.disabled = true;
+    const resp = await fetch(SCRIPT_URL + "?action=like&row=" + currentStory.row);
+    const newCount = await resp.text();
+    document.getElementById('countLikes').innerText = newCount;
+    btn.style.background = "var(--red)";
+    btn.style.color = "white";
+  }
+
+  function postComment() {
     const name = document.getElementById('cName').value;
     const msg = document.getElementById('cMsg').value;
-    if(!name || !msg) { alert("Please fill name and message"); return; }
-
-    const btn = event.target;
-    btn.innerText = "Posting...";
-    btn.disabled = true;
-
-    // Use JSONP/Script injection for cross-domain writing
+    if(!name || !msg) { alert("Please enter name and comment"); return; }
+    
+    document.getElementById('postBtn').innerText = "Posting...";
     const script = document.createElement('script');
     script.src = `${SCRIPT_URL}?callback=commCallback&action=comment&slug=${currentStory.slug}&name=${encodeURIComponent(name)}&msg=${encodeURIComponent(msg)}`;
     document.body.appendChild(script);
   }
 
-  // This clears the form after comment is sent
-  window.commCallback = function(response) {
+  window.commCallback = function(resp) {
     alert("Comment Posted!");
     document.getElementById('cName').value = "";
     document.getElementById('cMsg').value = "";
-    // Reload comments view
-    init(); 
+    document.getElementById('postBtn').innerText = "POST COMMENT";
+    loadComments(currentStory.slug);
   };
+
+  function closeReader() {
+    document.getElementById('reader').style.display = 'none';
+    document.getElementById('hub').style.display = 'block';
+    window.history.pushState({}, '', window.location.pathname);
+    render();
+    renderTrending();
+  }
+
+  function setCat(cat, btn) {
+    document.querySelectorAll('.cat-nav button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    filtered = cat === 'All' ? ALL : ALL.filter(x => x.category === cat);
+    render();
+  }
+</script>
+</body>
+</html>
