@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Glory FM - Redirecting...</title>
+    <meta property="og:title" content="Radio Bayelsa - Glory FM 97.1">
+    <meta property="og:description" content="Click to read the latest news update from Glory FM.">
+    <meta property="og:image" content="https://www.radiobayelsa.info/logo.png">
+    
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f4f4f4; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #bb1919; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div style="text-align: center;">
+        <div class="loader" style="margin: 0 auto 10px;"></div>
+        <p>Loading Story...</p>
+    </div>
+
+    <script>
+        // 1. Get the story from the GitHub link (e.g. ?story=story-123)
+        const urlParams = new URLSearchParams(window.location.search);
+        const story = urlParams.get('story');
+
+        // 2. Your Google Site "News" Page URL
+        const googleSiteUrl = "https://www.radiobayelsa.info/news";
+
+        // 3. Build the destination
+        let destination = googleSiteUrl;
+        if (story) {
+            destination += "?story=" + story;
+        }
+
+        // 4. Warp the user to the Google Site
+        window.location.href = destination;
+    </script>
+</body>
+</html>
